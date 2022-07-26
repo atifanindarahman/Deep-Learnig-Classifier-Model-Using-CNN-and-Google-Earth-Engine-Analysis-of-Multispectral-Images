@@ -1,0 +1,53 @@
+var shp= ee.FeatureCollection(table);
+//filter image collection
+var image = ee.Image(ee.ImageCollection('LANDSAT/LC08/C01/T1_SR')
+    .filterBounds(roi)
+    .filterDate('2020-01-01', '2020-12-31')
+    .sort('CLOUD_COVER')
+    .first());
+Map.addLayer(image, {bands: ['B4', 'B3', 'B2'],min:0, max: 3000}, 'True colour image');
+
+//Merge feature collections
+var newfc = Barren_land.merge(waterbody).merge(vegetation).merge(Buildup_area);
+print(newfc);
+
+//Create training data
+var bands = ['B2', 'B3', 'B4', 'B5', 'B6', 'B7'];
+var training = image.select(bands).sampleRegions({
+collection: newfc,
+properties: ['landcover'],
+scale: 30
+});
+print(training);
+
+//Traing the classifier
+var classifier = ee.Classifier.smileCart().train({
+features: training,
+classProperty: 'landcover',
+inputProperties: bands
+});
+
+//Run the classification
+var classified = image.select(bands).classify(classifier);
+
+//Display classification
+Map.centerObject(newfc, 11);
+Map.addLayer(image,
+{bands: ['B4', 'B3', 'B2'],min:0, max: 3000}, 'True colour image');
+Map.addLayer(classified,
+{min: 0, max: 3, palette: ['DD1009','DD8609','0D4494','288A25']},
+'classification');
+Map.addLayer(newfc);
+
+//Export Map
+Export.image.toDrive({
+  image: classified,
+  description: 'lulc2',
+  folder: "image EE",
+  scale: 30,
+  region: shp,
+  fileFormat: 'GeoTIFF',
+  formatOptions: {
+    cloudOptimized: true
+  }
+});
