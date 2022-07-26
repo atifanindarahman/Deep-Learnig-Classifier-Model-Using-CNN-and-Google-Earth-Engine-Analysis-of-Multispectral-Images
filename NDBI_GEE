@@ -1,0 +1,23 @@
+var shp= ee.FeatureCollection(table);
+
+
+var image = ee.ImageCollection('LANDSAT/LC08/C01/T1_SR')
+
+.filterBounds(roi).filterDate('2021-01-01','2021-01-31').first();
+
+var NDBI_Method = image.normalizedDifference(['B6','B5']);
+Map.addLayer(NDBI_Method, {min:-1, max:1, palette:['white','green','red']},'NDBI Method');
+
+Map.addLayer(image,{min:208, max:11556, gamma:2, bands:['B4','B3','B2']}, 'Landsat Image', false);
+
+Export.image.toDrive({
+  image: NDBI_Method,
+  description: 'NDBI',
+  folder: "image EE",
+  scale: 30,
+  region: shp,
+  fileFormat: 'GeoTIFF',
+  formatOptions: {
+    cloudOptimized: true
+  }
+});
