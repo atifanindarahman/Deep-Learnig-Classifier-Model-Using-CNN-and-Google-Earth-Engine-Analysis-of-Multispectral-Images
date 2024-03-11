@@ -1,4 +1,4 @@
-- 👋 Hi, I’m @Catifode
+- 👋 Hi, I’m @Atif
 - 👀 I’m interested in maching learning in geospatial analysis
 - 🌱 I’m currently learning model prediction
 - 💞️ I’m looking to collaborate on GISP model and ML to predict possible location of green infrastructure in BD by 2050
